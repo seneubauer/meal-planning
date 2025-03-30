@@ -26,6 +26,7 @@ DROP TABLE mealPlanning.dbo.macronutrientType;
 --------------------------------------------------
 -->> enumeration tables
 --------------------------------------------------
+
 CREATE TABLE mealPlanning.dbo.macronutrientType (
 	macronutrientTypeID INT IDENTITY(1, 1) NOT NULL,
 	name VARCHAR(32) NOT NULL,

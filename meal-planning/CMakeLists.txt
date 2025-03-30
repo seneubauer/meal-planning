@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.19)
 project(meal-planning LANGUAGES CXX)
 
 find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets)
+find_package(Qt6 REQUIRED COMPONENTS Sql)
 
 qt_standard_project_setup()
 
@@ -11,12 +12,16 @@ qt_add_executable(meal-planning
     meal_planning.cpp
     meal_planning.h
     meal_planning.ui
+
+    dropdownquerymodel.h dropdownquerymodel.cpp
+    databaseconnection.h databaseconnection.cpp
 )
 
 target_link_libraries(meal-planning
     PRIVATE
         Qt::Core
         Qt::Widgets
+        Qt::Sql
 )
 
 include(GNUInstallDirs)
