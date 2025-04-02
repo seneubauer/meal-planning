@@ -14,7 +14,10 @@
    <string>meal_planning</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <widget class="QTableView" name="vitaminTable"/>
+    </item>
     <item>
      <widget class="QComboBox" name="comboBox"/>
     </item>

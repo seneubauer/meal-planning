@@ -3,6 +3,8 @@
 
 #include "databaseconnection.h"
 #include "dropdownquerymodel.h"
+#include "tablemodel.h"
+#include "tableview.h"
 
 #include <QMainWindow>
 #include <QSqlDatabase>
@@ -27,6 +29,7 @@ public:
     void initialization();
     databaseConnection mainConnection;
     dropDownQueryModel *vitaminModel;
+    tableModel *model;
 
 private slots:
     void vitaminSelected(int index);

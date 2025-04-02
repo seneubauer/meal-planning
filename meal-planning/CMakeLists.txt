@@ -15,6 +15,10 @@ qt_add_executable(meal-planning
 
     dropdownquerymodel.h dropdownquerymodel.cpp
     databaseconnection.h databaseconnection.cpp
+    tableview.h tableview.cpp
+    columnItem.h
+    tablemodel.h tablemodel.cpp
+    editedCell.h
 )
 
 target_link_libraries(meal-planning
