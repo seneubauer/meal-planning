@@ -1,30 +1,121 @@
 #include "databaseconnection.h"
 
-#include <QDebug>
-#include <QSqlError>
-
-databaseConnection::databaseConnection() {}
+databaseConnection::databaseConnection(QObject *parent) : QObject{parent} { _isConnected = false; _activeTransaction = false; }
 databaseConnection::~databaseConnection() {
     disconnect();
+    delete _db;
 }
 
-bool databaseConnection::connect(QString serverAddress, QString databaseName, QString connectionName) {
+bool databaseConnection::connect(const QString &serverAddress, const QString &databaseName, const QString &connectionName) {
 
-    QString connStr = QString("Driver=%1;Server=%2;Database=%3;Trusted_Connection=Yes;").arg(sqlDriver, serverAddress, databaseName);
-    db = QSqlDatabase::addDatabase(qtDriver, connectionName);
-    db.setDatabaseName(connStr);
+    QString connectionString = QString("Driver=%1;Server=%2;Database=%3;Trusted_Connection=Yes;").arg(_sqlDriver, serverAddress, databaseName);
+    *_db = QSqlDatabase::addDatabase(_qtDriver, connectionName);
+    _db->setDatabaseName(connectionString);
 
-    isConnected = db.open();
-    if (isConnected) {
-        qDebug() << QString("connection to [%1].[%2] as '%3' succeeded").arg(serverAddress, databaseName, connectionName);
+    _isConnected = _db->open();
+    if (_isConnected) {
+        emit connectionSuccess(serverAddress, databaseName, connectionName);
     } else {
-        qDebug() << QString("connection to [%1].[%2] as '%3' failed").arg(serverAddress, databaseName, connectionName);
-        qDebug() << db.lastError().text();
+        emit connectionFailure(serverAddress, databaseName, connectionName, _db->lastError().text());
     }
-    return isConnected;
+
+    return _isConnected;
 }
 
 void databaseConnection::disconnect() {
-    db.close();
-    isConnected = false;
+    _db->removeDatabase(_db->connectionName());
+    _db->close();
+    _isConnected = false;
 }
+
+bool databaseConnection::openTransaction() {
+    if (_activeTransaction)
+        return true;
+
+    _activeTransaction = _db->transaction();
+    if (!_activeTransaction) {
+        emit transactionError(_db->lastError().text());
+        _activeTransaction = false;
+    }
+
+    return _activeTransaction;
+}
+
+bool databaseConnection::commitTransaction() {
+    if (!_activeTransaction)
+        return false;
+
+    if (!_db->commit()) {
+        emit transactionError(_db->lastError().text());
+        return false;
+    }
+
+    return true;
+}
+
+bool databaseConnection::rollbackTransaction() {
+    if (!_activeTransaction)
+        return false;
+
+    if (!_db->rollback()) {
+        emit transactionError(_db->lastError().text());
+        return false;
+    }
+
+    return true;
+}
+
+QVector<QVector<QVariant>> databaseConnection::select(QSqlQuery &query) {
+    QVector<QVector<QVariant>> output;
+    if (query.exec()) {
+        int fieldCount = query.record().count();
+        QVector<QVariant> row;
+        while (query.next()) {
+            for (int i = 0; i < fieldCount; ++i) {
+                row.append(query.value(i));
+            }
+            output.append(row);
+            row.clear();
+        }
+        return output;
+    } else {
+        emit queryFailed(query);
+        return output;
+    }
+}
+
+QVector<QVector<QVariant>> databaseConnection::select(const QString &&sql) {
+    QSqlQuery query = QSqlQuery(*_db);
+    query.prepare(sql);
+    return select(query);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
